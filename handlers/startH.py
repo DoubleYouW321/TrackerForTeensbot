@@ -14,6 +14,7 @@ async def cmd_start(message: Message, session: AsyncSession):
         "Привет, я твой онлайн помощник. Выбери раздел интересующий тебя:", 
         reply_markup=get_callback_btns(btns={
             'Психологическое благополучие': 'psychology',
+            'Учебный раздел': 'learning',
         })
             )
     await req_set_user(session, data=message.from_user.id)
@@ -25,5 +26,6 @@ async def back_to_main_menu(callback: CallbackQuery):
         "Выбери раздел интересующий тебя:", 
         reply_markup=get_callback_btns(btns={
             'Психологическое благополучие': 'psychology',
+            'Учебный раздел': 'learning',
         })
             )
