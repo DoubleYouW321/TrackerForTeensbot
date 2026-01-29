@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User, MoodRecord, Homework, HomeworkProgress
@@ -93,12 +93,17 @@ async def req_add_homework(session: AsyncSession, data: dict):
         tg_id=data['tg_id'],
         lesson=data['lesson'],
         description=data['description'],
+        deadline=data['deadline'],
     )
     session.add(obj)
     await session.commit()
 
 async def req_get_my_homeworks(session: AsyncSession, tg_id: int):
-    query = select(Homework).where(Homework.tg_id == tg_id)
+    await delete_expired_homeworks(session, tg_id)
+    
+    query = select(Homework).where(
+        Homework.tg_id == tg_id
+    ).order_by(Homework.deadline)
     result = await session.execute(query)
     return result.scalars().all()
 
@@ -107,18 +112,29 @@ async def req_delete_homework(session: AsyncSession, homework_id: int):
     await session.execute(query)
     await session.commit()
 
-async def req_update_homework_progress(session: AsyncSession, tg_id: int):
+async def req_update_homework_progress(session: AsyncSession, tg_id: int, is_expired: bool = False):
     query = select(HomeworkProgress).where(HomeworkProgress.tg_id == tg_id)
     result = await session.execute(query)
     progress = result.scalar_one_or_none()
     
     if progress:
-        progress.completed_count += 1
+        if is_expired:
+            progress.expired_count += 1
+        else:
+            progress.completed_count += 1
     else:
-        progress = HomeworkProgress(
-            tg_id=tg_id,
-            completed_count=1
-        )
+        if is_expired:
+            progress = HomeworkProgress(
+                tg_id=tg_id,
+                expired_count=1,
+                completed_count=0
+            )
+        else:
+            progress = HomeworkProgress(
+                tg_id=tg_id,
+                completed_count=1,
+                expired_count=0
+            )
         session.add(progress)
     
     await session.commit()
@@ -128,3 +144,25 @@ async def req_get_homework_progress(session: AsyncSession, tg_id: int):
     query = select(HomeworkProgress).where(HomeworkProgress.tg_id == tg_id)
     result = await session.execute(query)
     return result.scalar_one_or_none()
+
+async def delete_expired_homeworks(session: AsyncSession, tg_id: int):
+    today = date.today()
+    
+    query = select(Homework).where(
+        and_(
+            Homework.tg_id == tg_id,
+            Homework.deadline < today
+        )
+    )
+    result = await session.execute(query)
+    expired_homeworks = result.scalars().all()
+    
+    for homework in expired_homeworks:
+        delete_query = delete(Homework).where(Homework.id == homework.id)
+        await session.execute(delete_query)
+        
+        await req_update_homework_progress(session, tg_id, is_expired=True)
+    
+    await session.commit()
+    return expired_homeworks
+

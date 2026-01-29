@@ -1,4 +1,5 @@
-from aiogram import F, Router
+from datetime import date
+from aiogram import F, Bot, Router
 from aiogram.filters import Command, StateFilter, or_f
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +9,14 @@ import random
 
 from keyboards.inline_kbd import get_callback_btns
 import keyboards.inline_kbd as kb
-from database.requests import req_add_homework, req_get_my_homeworks, req_delete_homework, req_update_homework_progress, req_get_homework_progress
+from database.requests import (
+    req_add_homework, 
+    req_get_my_homeworks, 
+    req_delete_homework, 
+    req_update_homework_progress, 
+    req_get_homework_progress,
+    delete_expired_homeworks
+)
 
 learning_router = Router()
 
@@ -29,17 +37,33 @@ LEARNING_ADVICES = {
 class AddHomework(StatesGroup):
     lesson = State()
     description = State()
-    
+    deadline = State()
+
     texts = {
         'AddHomework:lesson': 'Введите название урока, по которому вы хотите добавить ДЗ 📚',
         'AddHomework:description': 'Введите описание задания ✍️',
     }
 
 @learning_router.callback_query(or_f(F.data == 'learning', F.data == 'back_to_learning'))
-async def cmd_learning(callback: CallbackQuery):
+async def cmd_learning(callback: CallbackQuery, session: AsyncSession, bot: Bot):
     await callback.answer('')
-    await callback.message.answer('''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', reply_markup=kb.learning_kb)
 
+    expired = await delete_expired_homeworks(session, callback.from_user.id)
+    
+    for homework in expired:
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=f"❌ <b>Просрочено и удалено!</b>\n\n"
+                 f"📚 Предмет: {homework.lesson}\n"
+                 f"📝 Задание: {homework.description}\n"
+                 f"📅 Дедлайн был: {homework.deadline.strftime('%d.%m.%Y')}",
+            parse_mode='HTML'
+        )
+    
+    await callback.message.answer(
+        '''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
+        reply_markup=kb.learning_kb
+    )
 # FSM
 
 @learning_router.callback_query(StateFilter('*'), F.data == 'cancel')
@@ -80,26 +104,81 @@ async def lesson(message: Message, state: FSMContext):
     await state.set_state(AddHomework.description)
 
 @learning_router.message(AddHomework.description)
-async def lesson(message: Message, state: FSMContext, session: AsyncSession):
-    await state.update_data(description=message.text, tg_id=message.from_user.id)
-    data = await state.get_data()
-    await req_add_homework(session, data)
-    await message.answer(f'ДЗ добавлено ✅', reply_markup=get_callback_btns(btns={
-        '⬅️ Назад': 'back_to_learning',
-    }))
-    await state.clear()
+async def description(message: Message, state: FSMContext):
+    await state.update_data(description=message.text)
+    await message.answer('Введите дедлайн в формате ДД.ММ.ГГГГ (например: 25.12.2026) 📅', reply_markup=kb.hw_back_cancel_kb)
+    await state.set_state(AddHomework.deadline)
+
+@learning_router.message(AddHomework.deadline)
+async def deadline(message: Message, state: FSMContext, session: AsyncSession):
+    try:
+        day, month, year = map(int, message.text.split('.'))
+        deadline_date = date(year, month, day)
+        
+        today = date.today()
+        if deadline_date < today:
+            await message.answer('❌ Дата дедлайна не может быть в прошлом! Введите корректную дату:')
+            return
+        
+        await state.update_data(deadline=deadline_date, tg_id=message.from_user.id)
+        data = await state.get_data()
+        await req_add_homework(session, data)
+        await message.answer(f'✅ ДЗ добавлено!\n📅 Дедлайн: {deadline_date.strftime("%d.%m.%Y")}', 
+                           reply_markup=get_callback_btns(btns={
+                               '⬅️ Назад': 'back_to_learning',
+                           }))
+        await state.clear()
+    except (ValueError, AttributeError):
+        await message.answer('❌ Неверный формат даты! Используйте ДД.ММ.ГГГГ (например: 25.12.2024):')
 
 # FSM close
 
 @learning_router.callback_query(F.data == 'my_homeworks')
-async def cmd_my_homeworks(callback: CallbackQuery, session: AsyncSession):
-    for homework in await req_get_my_homeworks(session, tg_id=callback.from_user.id):
+async def cmd_my_homeworks(callback: CallbackQuery, session: AsyncSession, bot: Bot):
+    # Проверяем и удаляем просроченные задания
+    expired = await delete_expired_homeworks(session, callback.from_user.id)
+    
+    for homework in expired:
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=f"❌ <b>Просрочено и удалено!</b>\n\n"
+                 f"📚 Предмет: {homework.lesson}\n"
+                 f"📝 Задание: {homework.description}\n"
+                 f"📅 Дедлайн был: {homework.deadline.strftime('%d.%m.%Y')}",
+            parse_mode='HTML'
+        )
+    
+    homeworks = await req_get_my_homeworks(session, tg_id=callback.from_user.id)
+    
+    if not homeworks:
+        await callback.message.answer('📭 У вас нет активных домашних заданий', 
+                                    reply_markup=get_callback_btns(btns={
+                                        '⬅️ Назад': 'back_to_learning',
+                                    }))
+        return
+    
+    for homework in homeworks:
+        deadline_date = homework.deadline
+        days_left = (deadline_date - date.today()).days
+        
+        deadline_text = f"📅 Дедлайн: {deadline_date.strftime('%d.%m.%Y')}"
+        
+        if days_left < 0:
+            deadline_text += " (просрочено!) ⚠️"
+        elif days_left == 0:
+            deadline_text += " (сегодня!) ⚠️"
+        elif days_left <= 3:
+            deadline_text += f" (осталось {days_left} дня!) ⚠️"
+        else:
+            deadline_text += f" (осталось {days_left} дней)"
+        
         await callback.message.answer(
-            f'''📚 {homework.lesson}\n📝 {homework.description}''',
+            f'''📚 {homework.lesson}\n📝 {homework.description}\n{deadline_text}''',
             reply_markup=get_callback_btns(btns={
                 '✅ Сдать': f'delete_{homework.id}',
             })
         )
+    
     await callback.message.answer('📋 Ваши домашние задания', reply_markup=get_callback_btns(btns={
         '⬅️ Назад': 'back_to_learning',
     }))
@@ -110,7 +189,7 @@ async def delete_product(callback: CallbackQuery, session: AsyncSession):
     await req_delete_homework(session, int(homework_id))
     await req_update_homework_progress(session, tg_id=callback.from_user.id)
     await callback.answer('')
-    await callback.message.answer('Домашнее задание сдано! 🎉', reply_markup=get_callback_btns(btns={
+    await callback.message.answer('✅ Домашнее задание сдано! 🎉', reply_markup=get_callback_btns(btns={
         '⬅️ Назад': 'back_to_learning',
     }))
 
@@ -122,6 +201,7 @@ async def progress(callback: CallbackQuery, session: AsyncSession):
         message_text = (
             f"📊 Ваша статистика:\n\n"
             f"✅ Выполнено заданий: {progress_record.completed_count}\n"
+            f"❌ Просрочено заданий: {progress_record.expired_count}\n"
             f"🎯 Продолжайте в том же духе! 💪"
         )
         await callback.message.answer(message_text, reply_markup=get_callback_btns(btns={

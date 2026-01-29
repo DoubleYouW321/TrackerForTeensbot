@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, Float, func
+from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, String, Text, Float, func
 from datetime import date
 
 class Base(DeclarativeBase):
@@ -25,9 +25,12 @@ class Homework(Base):
     tg_id: Mapped[int] = mapped_column()
     lesson: Mapped[str] = mapped_column()
     description: Mapped[str] = mapped_column()
+    deadline: Mapped[date] = mapped_column(Date, nullable=True)
+    is_expired: Mapped[bool] = mapped_column(default=False)
 
 class HomeworkProgress(Base):
     __tablename__ = 'homework_progress'
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_id: Mapped[int] = mapped_column()
     completed_count: Mapped[int] = mapped_column(default=0)
+    expired_count: Mapped[int] = mapped_column(default=0)
