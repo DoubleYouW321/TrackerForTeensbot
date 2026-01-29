@@ -34,3 +34,20 @@ class HomeworkProgress(Base):
     tg_id: Mapped[int] = mapped_column()
     completed_count: Mapped[int] = mapped_column(default=0)
     expired_count: Mapped[int] = mapped_column(default=0)
+
+class DailyMetric(Base):
+    __tablename__ = 'daily_metrics'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id: Mapped[int] = mapped_column()
+    date: Mapped[str] = mapped_column(default=lambda: date.today().isoformat())
+    water_glasses: Mapped[int] = mapped_column(default=0)
+    sleep_hours: Mapped[float] = mapped_column(default=0.0)
+    steps: Mapped[int] = mapped_column(default=0)
+
+class Category(Base):
+    __tablename__ = 'categories'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id: Mapped[int] = mapped_column()
+    water: Mapped[int] = mapped_column(default=8)
+    hours: Mapped[int] = mapped_column(default=8)
+    steps: Mapped[int] = mapped_column(default=10000)

@@ -15,6 +15,7 @@ async def cmd_start(message: Message, session: AsyncSession):
         reply_markup=get_callback_btns(btns={
             'Психологическое благополучие': 'psychology',
             'Учебный раздел': 'learning',
+            'Здоровье и Активность': 'health',
         })
             )
     await req_set_user(session, data=message.from_user.id)
@@ -27,5 +28,6 @@ async def back_to_main_menu(callback: CallbackQuery):
         reply_markup=get_callback_btns(btns={
             'Психологическое благополучие': 'psychology',
             'Учебный раздел': 'learning',
+            'Здоровье и Активность': 'health',
         })
             )

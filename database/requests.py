@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import User, MoodRecord, Homework, HomeworkProgress
+from database.models import User, MoodRecord, Homework, HomeworkProgress, DailyMetric, Category
 
 #Добавление пользователя
 async def req_set_user(session: AsyncSession, data: int):
@@ -18,6 +18,7 @@ async def req_set_user(session: AsyncSession, data: int):
         user = User(tg_id=data)
         session.add(user)
         await session.commit()
+        return user
 
 # запросы для дневника настроения
 async def req_save_mood_record(session: AsyncSession, tg_id: int, mood_type: str, emoji: str):
@@ -166,3 +167,80 @@ async def delete_expired_homeworks(session: AsyncSession, tg_id: int):
     await session.commit()
     return expired_homeworks
 
+# Запросы для ДЗ
+
+async def req_save_daily_metrics(session: AsyncSession, tg_id: int, water: int, sleep: float, steps: int):
+    user = await req_set_user(session, tg_id)
+    today_str = date.today().isoformat()
+        
+    metric = await session.scalar(
+    select(DailyMetric).where(
+            and_(DailyMetric.tg_id == user.tg_id, DailyMetric.date == today_str)
+        )
+    )
+        
+    if metric:
+        metric.water_glasses = water
+        metric.sleep_hours = sleep
+        metric.steps = steps
+    else:
+        metric = DailyMetric(
+            tg_id=user.tg_id,
+            date=today_str,
+            water_glasses=water,
+            sleep_hours=sleep,
+            steps=steps
+        )
+        session.add(metric)
+        
+    await session.commit()
+        
+    return {
+        'water_glasses': water,
+        'sleep_hours': sleep,
+        'steps': steps,
+        'date': today_str
+    }
+
+async def req_get_today_metrics(session: AsyncSession, tg_id: int):
+    user = await req_set_user(session, tg_id)
+    today_str = date.today().isoformat()
+        
+    metric = await session.scalar(
+        select(DailyMetric).where(
+            and_(DailyMetric.tg_id == user.tg_id, DailyMetric.date == today_str)
+        )
+    )
+        
+    if metric:
+        return {
+            'water_glasses': metric.water_glasses,
+            'sleep_hours': metric.sleep_hours,
+            'steps': metric.steps,
+            'date': metric.date
+        }
+    return None
+
+async def req_get_user_category(session: AsyncSession, tg_id: int):
+    user = await req_set_user(session, tg_id)
+    
+    result = await session.execute(
+        select(Category).where(Category.tg_id == tg_id)
+    )
+    category = result.scalar_one_or_none()
+
+    if not category:
+        category = Category(
+            tg_id=tg_id,
+            water=8,      
+            hours=8,      
+            steps=10000   
+        )
+        session.add(category)
+        await session.commit()
+    
+    return {
+        'water': category.water,
+        'hours': category.hours,
+        'steps': category.steps
+    }

@@ -65,3 +65,28 @@ hw_back_cancel_kb = get_callback_btns(btns={
     '↩️ Назад': 'back',
     '❌ Отмена': 'cancel',
 })
+
+health = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Совет', callback_data='advice')],
+    [InlineKeyboardButton(text='Показатели', callback_data='categories')],
+    [InlineKeyboardButton(text='⬅️ Назад в меню', callback_data='back_to_main_menu')],
+])
+
+cancel_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='❌ Отмена', callback_data='cancel_input')]
+])
+
+update_metrics = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='✅ Да, обновить', callback_data='update_metrics_confirm')],
+    [InlineKeyboardButton(text='❌ Нет, оставить как есть', callback_data='health')]
+])
+
+back_to_heath = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='⬅️ Назад', callback_data='health')]
+])
+
+metrics_actions = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='➕ Обновить данные', callback_data='categories')],
+    [InlineKeyboardButton(text='📈 Статистика', callback_data='stats')],
+    [InlineKeyboardButton(text='⬅️ Назад', callback_data='health')]
+])
