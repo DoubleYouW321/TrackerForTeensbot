@@ -2,13 +2,14 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.types import FSInputFile
 
 from database.requests import req_get_all_moods, req_get_mood_statistics, req_save_mood_record
 from keyboards.inline_kbd import get_callback_btns
 import keyboards.inline_kbd as kb
 
 psychology_router = Router()
+
+PHOTO ='AgACAgIAAxkBAAICP2l805AuiVqqyjrWj0C-ghFIEm-2AAJPEmsbKX7gS38kiK2WDNV4AQADAgADeQADOAQ'
 
 SOS = {
     1: '''Диафрагмальное (брюшное) дыхание 🌬️
@@ -149,7 +150,7 @@ PROBLEMS = {
 
 @psychology_router.message(Command('psychology'))
 async def cmd_psychology_message(message: Message):
-    photo = FSInputFile('images/psychology.png')
+    photo = PHOTO
     await message.answer_photo(photo=photo, caption='Ты находишься в разделе Психологическое благополучие. Здесь ты можешь:\n\n• Избавиться от тревоги с помощью техник дыхания 🧘‍♂️\n• Вести дневник настроения и видеть свою статистику 📊\n• Получить пошаговую помощь в решении душевных проблем в навигаторе помощи 🤝', 
         reply_markup=kb.psychology)
 
@@ -157,7 +158,7 @@ async def cmd_psychology_message(message: Message):
 @psychology_router.callback_query(F.data == 'psychology')
 async def cmd_psychology_callback(callback: CallbackQuery):
     await callback.answer('🧠')
-    photo = FSInputFile('images/psychology.png')
+    photo = PHOTO
     await callback.message.answer_photo(photo=photo, caption='Ты находишься в разделе Психологическое благополучие. Здесь ты можешь:\n\n• Избавиться от тревоги с помощью техник дыхания 🧘‍♂️\n• Вести дневник настроения и видеть свою статистику 📊\n• Получить пошаговую помощь в решении душевных проблем в навигаторе помощи 🤝', 
         reply_markup=kb.psychology)
     

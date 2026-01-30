@@ -4,13 +4,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 import random
-from aiogram.types import FSInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import keyboards.inline_kbd as kb
 from database.requests import req_save_daily_metrics, req_get_today_metrics, req_get_user_category
 
 health_router = Router()
+
+PHOTO = 'AgACAgIAAxkBAAICPWl80y83JHkdJYtHRqW49TVbLPSkAAJKEmsbKX7gS87UWDwkR2bSAQADAgADeQADOAQ'
 
 ADVICES = {
     1: 'Вода и мозг 💧\nОбезвоживание всего на 2% уже снижает концентрацию и кратковременную память. Стакан воды утром — лучший "будильник" для мозга!',
@@ -32,14 +33,14 @@ class MetricsStates(StatesGroup):
 
 @health_router.message(Command('health'))
 async def cmd_health_message(message: Message):
-    photo = FSInputFile('images/sports.png')
+    photo = PHOTO
     await message.answer_photo(photo=photo, caption='В разделе Здоровье и Активность ты можешь получить полезный совет из базы знаний, а также записывать и редактировать свои физические показатели:\n\n• Количество выпитых стаканов воды 💧\n• Часы сна 😴\n• Количество пройденных шагов 👣\n\nСравнивай их с нормой и следи за прогрессом!', 
         reply_markup=kb.health)
 
 @health_router.callback_query(or_f(F.data == 'health', F.data == 'back_to_health'))
 async def cmd_health_callback(callback: CallbackQuery):
     await callback.answer('💪')
-    photo = FSInputFile('images/sports.png')
+    photo = PHOTO
     await callback.message.answer_photo(photo=photo, caption='В разделе Здоровье и Активность ты можешь получить полезный совет из базы знаний, а также записывать и редактировать свои физические показатели:\n\n• Количество выпитых стаканов воды 💧\n• Часы сна 😴\n• Количество пройденных шагов 👣\n\nСравнивай их с нормой и следи за прогрессом!', 
         reply_markup=kb.health)
 

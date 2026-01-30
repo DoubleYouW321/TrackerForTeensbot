@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 import random
-from aiogram.types import FSInputFile
 
 from keyboards.inline_kbd import get_callback_btns
 import keyboards.inline_kbd as kb
@@ -20,6 +19,8 @@ from database.requests import (
 )
 
 learning_router = Router()
+
+PHOTO = 'AgACAgIAAxkBAAICO2l80xelxUKg234V_TZm96sQGSwCAAJHEmsbKX7gS_XBTbMjOdQRAQADAgADeQADOAQ'
 
 LEARNING_ADVICES = {
     1: '''📚 Активное чтение. Не просто подчёркивай текст, а делай пометки на полях, формулируй главную мысль каждого абзаца своими словами, пробуй пересказать его по частям, сверяясь с текстом. 🖍️''',
@@ -59,7 +60,7 @@ async def cmd_learning_message(message: Message, session: AsyncSession, bot: Bot
             parse_mode='HTML'
         )
 
-    photo = FSInputFile('images/learning.png')
+    photo = PHOTO
     await message.answer_photo(photo=photo, caption='''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
         reply_markup=kb.learning_kb)
 
@@ -79,7 +80,7 @@ async def cmd_learning_callback(callback: CallbackQuery, session: AsyncSession, 
             parse_mode='HTML'
         )
     
-    photo = FSInputFile('images/learning.png')
+    photo = PHOTO
     await callback.message.answer_photo(photo=photo, caption='''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
         reply_markup=kb.learning_kb)
     

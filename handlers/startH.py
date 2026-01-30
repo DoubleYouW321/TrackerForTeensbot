@@ -2,16 +2,17 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart, Command, or_f
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.types import FSInputFile
 
 from database.requests import req_set_user
 from keyboards.inline_kbd import get_callback_btns
 
 start = Router()
 
+PHOTO = 'AgACAgIAAxkBAAICOWl80wErPSQTFRvCyR-0gzSBx018AAJGEmsbKX7gS0k2C47biAijAQADAgADeQADOAQ'
+
 @start.message(CommandStart())
 async def cmd_start(message: Message, session: AsyncSession):
-    photo = FSInputFile('images/hello.png')
+    photo = PHOTO
     await message.answer_photo(photo=photo, caption="Привет 👋, я твой онлайн помощник. Выбери раздел интересующий тебя:", 
         reply_markup=get_callback_btns(btns={
             '🧠 Психологическое благополучие': 'psychology',
@@ -33,3 +34,4 @@ async def back_to_main_menu(callback: CallbackQuery):
             '💬 Отправить отзыв': 'feedback',
         })
             )
+    
