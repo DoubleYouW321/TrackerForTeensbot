@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 import random
+from aiogram.types import FSInputFile
 
 from keyboards.inline_kbd import get_callback_btns
 import keyboards.inline_kbd as kb
@@ -57,11 +58,10 @@ async def cmd_learning_message(message: Message, session: AsyncSession, bot: Bot
                  f"📅 Дедлайн был: {homework.deadline.strftime('%d.%m.%Y')}",
             parse_mode='HTML'
         )
-    
-    await message.answer(
-        '''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
-        reply_markup=kb.learning_kb
-    )
+
+    photo = FSInputFile('images/learning.png')
+    await message.answer_photo(photo=photo, caption='''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
+        reply_markup=kb.learning_kb)
 
 @learning_router.callback_query(or_f(F.data == 'learning', F.data == 'back_to_learning'))
 async def cmd_learning_callback(callback: CallbackQuery, session: AsyncSession, bot: Bot):
@@ -79,10 +79,10 @@ async def cmd_learning_callback(callback: CallbackQuery, session: AsyncSession, 
             parse_mode='HTML'
         )
     
-    await callback.message.answer(
-        '''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
-        reply_markup=kb.learning_kb
-    )
+    photo = FSInputFile('images/learning.png')
+    await callback.message.answer_photo(photo=photo, caption='''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
+        reply_markup=kb.learning_kb)
+    
 # FSM
 
 @learning_router.callback_query(StateFilter('*'), F.data == 'cancel')

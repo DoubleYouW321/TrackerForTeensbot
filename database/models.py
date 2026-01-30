@@ -51,3 +51,9 @@ class Category(Base):
     water: Mapped[int] = mapped_column(default=8)
     hours: Mapped[int] = mapped_column(default=8)
     steps: Mapped[int] = mapped_column(default=10000)
+
+class Comment(Base):
+    __tablename__ = 'feedback'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    tg_id: Mapped[int] = mapped_column()
+    comment_text: Mapped[str] = mapped_column()

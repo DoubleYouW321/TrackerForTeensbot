@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import User, MoodRecord, Homework, HomeworkProgress, DailyMetric, Category
+from database.models import User, MoodRecord, Homework, HomeworkProgress, DailyMetric, Category, Comment
 
 #Добавление пользователя
 async def req_set_user(session: AsyncSession, data: int):
@@ -244,3 +244,12 @@ async def req_get_user_category(session: AsyncSession, tg_id: int):
         'hours': category.hours,
         'steps': category.steps
     }
+
+# Запросы для фидбэка
+
+async def req_set_comment(session: AsyncSession, tg_id, comment_text):
+    try:
+        session.add(Comment(tg_id=tg_id, comment_text=comment_text))
+        await session.commit()
+    except Exception as e:
+        print(f"Ошибка при сохранении комментария: {e}")
