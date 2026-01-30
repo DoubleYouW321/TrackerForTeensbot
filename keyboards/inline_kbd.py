@@ -67,8 +67,8 @@ hw_back_cancel_kb = get_callback_btns(btns={
 })
 
 health = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Совет', callback_data='advice')],
-    [InlineKeyboardButton(text='Показатели', callback_data='categories')],
+    [InlineKeyboardButton(text='💡 Совет', callback_data='advice')],
+    [InlineKeyboardButton(text='📝 Показатели', callback_data='categories')],
     [InlineKeyboardButton(text='⬅️ Назад в меню', callback_data='back_to_main_menu')],
 ])
 

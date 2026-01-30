@@ -44,10 +44,29 @@ class AddHomework(StatesGroup):
         'AddHomework:description': 'Введите описание задания ✍️',
     }
 
-@learning_router.callback_query(or_f(F.data == 'learning', F.data == 'back_to_learning'))
-async def cmd_learning(callback: CallbackQuery, session: AsyncSession, bot: Bot):
-    await callback.answer('')
+@learning_router.message(Command('learning'))
+async def cmd_learning_message(message: Message, session: AsyncSession, bot: Bot):
+    expired = await delete_expired_homeworks(session, message.from_user.id)
+    
+    for homework in expired:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=f"❌ <b>Просрочено и удалено!</b>\n\n"
+                 f"📚 Предмет: {homework.lesson}\n"
+                 f"📝 Задание: {homework.description}\n"
+                 f"📅 Дедлайн был: {homework.deadline.strftime('%d.%m.%Y')}",
+            parse_mode='HTML'
+        )
+    
+    await message.answer(
+        '''🎓 В учебном разделе ты можешь добавлять и сдавать свои домашние задания и отслеживать свой прогресс. А также я могу поделиться с тобой советами по учебе. 💪''', 
+        reply_markup=kb.learning_kb
+    )
 
+@learning_router.callback_query(or_f(F.data == 'learning', F.data == 'back_to_learning'))
+async def cmd_learning_callback(callback: CallbackQuery, session: AsyncSession, bot: Bot):
+    await callback.answer('📚')
+    
     expired = await delete_expired_homeworks(session, callback.from_user.id)
     
     for homework in expired:
