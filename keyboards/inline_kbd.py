@@ -90,3 +90,36 @@ metrics_actions = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='📈 Статистика', callback_data='stats')],
     [InlineKeyboardButton(text='⬅️ Назад', callback_data='health')]
 ])
+
+hobbies = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Спортивные занятия', callback_data='sports')],
+    [InlineKeyboardButton(text='Интеллектуальные хобби', callback_data='iq')],
+    [InlineKeyboardButton(text='⬅️ Назад в меню', callback_data='back_to_main_menu')]
+])
+
+sports = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='⚽️ Футбол', callback_data='s_football')],
+    [InlineKeyboardButton(text='🏐 Воллейбол', callback_data='s_volleyball')],
+    [InlineKeyboardButton(text='🏀 Баскетбол', callback_data='s_basketball')],
+    [InlineKeyboardButton(text='🏒 Хоккей', callback_data='s_hockey')],
+    [InlineKeyboardButton(text='🥊 Бокс', callback_data='s_box')],
+    [InlineKeyboardButton(text='🤸‍♀️ Гимнастика', callback_data='s_gymnastick')],
+    [InlineKeyboardButton(text='⛸️ Фигурное катание', callback_data='s_ice_skating')],
+    [InlineKeyboardButton(text='🎾Теннис', callback_data='s_tennis')],
+    [InlineKeyboardButton(text='🏊‍♂️ Плавание', callback_data='s_swimming')],
+    [InlineKeyboardButton(text='🤼 Борьба', callback_data='s_wrestling')],
+    [InlineKeyboardButton(text='⬅️ Назад', callback_data='hobbies')]
+])
+
+iq = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='♟️ Шахматы', callback_data='iq_chess')],
+    [InlineKeyboardButton(text='💻 Программирование', callback_data='iq_it')],
+    [InlineKeyboardButton(text='🎮 Киберспорт', callback_data='iq_gaming')],
+    [InlineKeyboardButton(text='🧩 Пазлы', callback_data='iq_puzzles')],
+    [InlineKeyboardButton(text='🧶 Вязание / Плетение из бисера', callback_data='iq_knit')],
+    [InlineKeyboardButton(text='🎨 Рисование', callback_data='iq_drawing')],
+    [InlineKeyboardButton(text='🧱 Лепка (из глины, пластилина)', callback_data='iq_modelling')],
+    [InlineKeyboardButton(text='🔢 Решение судоку', callback_data='iq_sudoku')],
+    [InlineKeyboardButton(text='✍️ Решение кроссвордов', callback_data='iq_crosswords')],
+    [InlineKeyboardButton(text='⬅️ Назад', callback_data='hobbies')]
+])

@@ -25,6 +25,7 @@ async def cmd_start(message: Message, session: AsyncSession):
             '🧠 Психологическое благополучие': 'psychology',
             '🎓 Учебный раздел': 'learning',
             '💪 Здоровье и Активность': 'health',
+            '🏀 Хобби': 'hobbies',
             '💬 Отправить отзыв': 'feedback',
         }))
     await req_set_user(session, data=message.from_user.id)
@@ -38,6 +39,7 @@ async def back_to_main_menu(callback: CallbackQuery):
             '🧠 Психологическое благополучие': 'psychology',
             '🎓 Учебный раздел': 'learning',
             '💪 Здоровье и Активность': 'health',
+            '🏀 Хобби': 'hobbies',
             '💬 Отправить отзыв': 'feedback',
         })
             )
