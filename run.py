@@ -13,8 +13,10 @@ from handlers.learning import learning_router
 from handlers.health import health_router
 from handlers.feedback import feedback_router
 from handlers.hobbies import hobbies_router
+from handlers.ai import ai_router
 from database.engine import create_db, drop_db, session_maker
 from middlewares.mw import DataBaseSession
+
 
 TOKEN = os.getenv("TOKEN")
 
@@ -34,7 +36,7 @@ async def main():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
-    dp.include_routers(start, psychology_router, learning_router, health_router, feedback_router, hobbies_router)
+    dp.include_routers(start, psychology_router, learning_router, health_router, feedback_router, hobbies_router, ai_router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

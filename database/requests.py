@@ -12,7 +12,7 @@ async def req_set_user(session: AsyncSession, data: int):
     user = result.scalar_one_or_none()
         
     if user:
-        await session.commit()
+        await session.commit() 
         return user
     else:
         user = User(tg_id=data)

@@ -7,6 +7,10 @@ def get_callback_btns(*, btns: dict[str, str], sizes: tuple[int] = (1,)):
         keyboard.add(InlineKeyboardButton(text=text, callback_data=data))
     return keyboard.adjust(*sizes).as_markup()
 
+back_to_main_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='⬅️ Назад в меню', callback_data='back_to_main_menu')],
+])
+
 psychology = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='🆘 SOS (антистресс)', callback_data='sos')],
     [InlineKeyboardButton(text='📖 Дневник настроения', callback_data='happy_diary')],

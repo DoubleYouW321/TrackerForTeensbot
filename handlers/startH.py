@@ -25,6 +25,7 @@ async def cmd_start(message: Message, session: AsyncSession):
             '🧠 Психологическое благополучие': 'psychology',
             '🎓 Учебный раздел': 'learning',
             '💪 Здоровье и Активность': 'health',
+            '🤖 Оценка состояния': 'conditions',
             '🏀 Хобби': 'hobbies',
             '💬 Отправить отзыв': 'feedback',
         }))
@@ -39,6 +40,7 @@ async def back_to_main_menu(callback: CallbackQuery):
             '🧠 Психологическое благополучие': 'psychology',
             '🎓 Учебный раздел': 'learning',
             '💪 Здоровье и Активность': 'health',
+            '🤖 Оценка состояния': 'conditions',
             '🏀 Хобби': 'hobbies',
             '💬 Отправить отзыв': 'feedback',
         })
